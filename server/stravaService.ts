@@ -30,9 +30,9 @@ export class StravaService {
   private redirectUri: string;
 
   constructor() {
-    this.clientId = process.env.STRAVA_CLIENT_ID || '';
-    this.clientSecret = process.env.STRAVA_CLIENT_SECRET || '';
-    this.redirectUri = process.env.STRAVA_REDIRECT_URI || 'https://www.strava.testapp.com/auth/strava/callback';
+    this.clientId = process.env.STRAVA_CLIENT_ID || '77505';
+    this.clientSecret = process.env.STRAVA_CLIENT_SECRET || '5fa802f6ee3011bf8362f22b28db3ac233a3a053';
+    this.redirectUri = process.env.STRAVA_REDIRECT_URI || 'https://tri-pacer.miracle.replit.app/auth/strava/callback';
   }
 
   getAuthUrl(): string {

@@ -1,5 +1,5 @@
 import { storage } from './storage';
-import { courseData, calculatePaces, PaceResult } from '../client/src/lib/calculator';
+import { calculatePaces, PaceResult } from '../shared/calculator';
 import type { StravaActivity } from '@shared/schema';
 
 interface ActivityStats {

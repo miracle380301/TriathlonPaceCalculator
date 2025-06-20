@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
 import CourseSelection from "@/components/course-selection";
 import GoalTimeForm from "@/components/goal-time-form";
 import WorldRecordAlert from "@/components/world-record-alert";
 import ResultsDisplay from "@/components/results-display";
 import TrainingTips from "@/components/training-tips";
+import StravaConnect from "@/components/strava-connect";
+import TrainingAnalysis from "@/components/training-analysis";
 import { calculatePaces, PaceResult } from "@/lib/calculator";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Calculator() {
   const [selectedCourse, setSelectedCourse] = useState<string | null>('olympic');
@@ -16,7 +20,36 @@ export default function Calculator() {
   const [t1Minutes, setT1Minutes] = useState<number>(0);
   const [t2Minutes, setT2Minutes] = useState<number>(0);
   const [results, setResults] = useState<PaceResult | null>(null);
+  const [trainingPlanData, setTrainingPlanData] = useState<any>(null);
+  const [isStravaConnected, setIsStravaConnected] = useState<boolean>(false);
   const { toast } = useToast();
+
+  // Mock user ID for demo - in real app this would come from auth
+  const userId = 'demo-user-123';
+
+  const trainingPlanMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('/api/training/plan', {
+        method: 'POST',
+        body: data
+      });
+    },
+    onSuccess: (data) => {
+      setTrainingPlanData(data);
+      toast({
+        title: "맞춤형 훈련 플랜 생성완료",
+        description: "Strava 데이터를 기반으로 개인화된 훈련 계획이 생성되었습니다.",
+      });
+    },
+    onError: (error) => {
+      console.error('Training plan error:', error);
+      toast({
+        title: "훈련 플랜 생성 실패", 
+        description: "Strava 연동 후 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleCalculate = () => {
     if (!selectedCourse) {
@@ -48,6 +81,19 @@ export default function Calculator() {
       );
       
       setResults(calculatedResults);
+
+      // If Strava is connected, generate personalized training plan
+      if (isStravaConnected) {
+        trainingPlanMutation.mutate({
+          userId,
+          course: selectedCourse,
+          goalHours,
+          goalMinutes,
+          goalSeconds,
+          t1Minutes,
+          t2Minutes
+        });
+      }
       
       // Scroll to results
       setTimeout(() => {
@@ -63,6 +109,10 @@ export default function Calculator() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleStravaConnectionUpdate = () => {
+    setIsStravaConnected(true);
   };
 
   return (
@@ -103,6 +153,12 @@ export default function Calculator() {
           selectedCourse={selectedCourse}
         />
 
+        <StravaConnect
+          userId={userId}
+          isConnected={isStravaConnected}
+          onConnectionUpdate={handleStravaConnectionUpdate}
+        />
+
         <WorldRecordAlert show={results?.isWorldRecord || false} />
 
         <div id="results-section">
@@ -112,6 +168,13 @@ export default function Calculator() {
             t2Minutes={t2Minutes}
           />
         </div>
+
+        {trainingPlanData && (
+          <TrainingAnalysis
+            comparison={trainingPlanData.comparison}
+            trainingPlan={trainingPlanData.trainingPlan}
+          />
+        )}
 
         <TrainingTips />
       </main>

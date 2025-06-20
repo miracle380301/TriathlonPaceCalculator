@@ -53,6 +53,18 @@ export class DatabaseStorage implements IStorage {
   
   // Strava integration
   async updateUserStravaTokens(userId: string, accessToken: string, refreshToken: string, expiryDate: Date): Promise<void> {
+    // First check if user exists, if not create them
+    let user = await this.getUser(userId);
+    if (!user) {
+      user = await this.upsertUser({
+        id: userId,
+        email: null,
+        firstName: null,
+        lastName: null,
+        profileImageUrl: null,
+      });
+    }
+    
     await db.update(users)
       .set({
         stravaAccessToken: accessToken,
@@ -98,7 +110,6 @@ export class DatabaseStorage implements IStorage {
     return await db.select()
       .from(stravaActivities)
       .where(eq(stravaActivities.userId, userId))
-      .where(gte(stravaActivities.startDate, weeksAgo))
       .orderBy(desc(stravaActivities.startDate));
   }
 }
