@@ -120,7 +120,7 @@ export class StravaService {
     const activities = await res.json();
 
     const fourWeeksAgo = new Date();
-    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 228);
+    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
 
     const allActivities = activities;
     // console.log("🔥 전체 활동 수:", allActivities.length);
