@@ -12,7 +12,11 @@ interface StravaConnectProps {
   onConnectionUpdate: () => void;
 }
 
-export default function StravaConnect({ userId, isConnected, onConnectionUpdate }: StravaConnectProps) {
+export default function StravaConnect({
+  userId,
+  isConnected,
+  onConnectionUpdate,
+}: StravaConnectProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
@@ -20,18 +24,17 @@ export default function StravaConnect({ userId, isConnected, onConnectionUpdate 
   const handleConnect = async () => {
     try {
       setIsConnecting(true);
-      const response = await apiRequest('/api/strava/auth', {
-        method: 'GET'
-      });
-      
+      const response = await apiRequest("GET", "/api/strava/auth");
+      console.log("Strava auth response:", response);
+
       if (response.authUrl) {
         // Store userId for callback
-        localStorage.setItem('stravaUserId', userId);
+        localStorage.setItem("stravaUserId", userId);
         // Redirect to Strava authorization
         window.location.href = response.authUrl;
       }
     } catch (error) {
-      console.error('Strava connect error:', error);
+      console.error("Strava connect error:", error);
       toast({
         title: "연결 실패",
         description: "Strava 연결 중 문제가 발생했습니다.",
@@ -45,22 +48,21 @@ export default function StravaConnect({ userId, isConnected, onConnectionUpdate 
   const handleSync = async () => {
     try {
       setIsSyncing(true);
-      await apiRequest('/api/strava/sync', {
-        method: 'POST',
-        body: { userId }
+      const activities = await apiRequest(`/api/activities/${userId}`, {
+        method: 'GET'
       });
       
       toast({
-        title: "동기화 완료",
-        description: "Strava 활동 데이터가 성공적으로 동기화되었습니다.",
+        title: "데이터 확인 완료",
+        description: `최근 4주간 ${activities.length}개의 운동 기록을 확인했습니다.`,
       });
       
       onConnectionUpdate();
     } catch (error) {
       console.error('Strava sync error:', error);
       toast({
-        title: "동기화 실패",
-        description: "활동 데이터 동기화 중 문제가 발생했습니다.",
+        title: "데이터 확인 실패",
+        description: "활동 데이터 확인 중 문제가 발생했습니다.",
         variant: "destructive",
       });
     } finally {
@@ -76,12 +78,19 @@ export default function StravaConnect({ userId, isConnected, onConnectionUpdate 
             <Activity className="text-white" size={20} />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-neutral-dark">Strava 연동</h2>
-            <p className="text-gray-600 text-sm">운동 데이터를 연동하여 개인화된 훈련 플랜을 받아보세요</p>
+            <h2 className="text-xl font-semibold text-neutral-dark">
+              Strava 연동
+            </h2>
+            <p className="text-gray-600 text-sm">
+              운동 데이터를 연동하여 개인화된 훈련 플랜을 받아보세요
+            </p>
           </div>
         </div>
         {isConnected && (
-          <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+          <Badge
+            variant="default"
+            className="bg-green-100 text-green-800 border-green-200"
+          >
             <Zap size={12} className="mr-1" />
             연결됨
           </Badge>
@@ -102,14 +111,16 @@ export default function StravaConnect({ userId, isConnected, onConnectionUpdate 
               className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 mx-auto"
             >
               <ExternalLink size={16} />
-              {isConnecting ? 'Strava 연결 중...' : 'Strava 연결하기'}
+              {isConnecting ? "Strava 연결 중..." : "Strava 연결하기"}
             </Button>
           </div>
         ) : (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-gray-700">Strava 계정이 연결되어 있습니다</span>
+              <span className="text-gray-700">
+                Strava 계정이 연결되어 있습니다
+              </span>
             </div>
             <Button
               onClick={handleSync}
@@ -118,7 +129,7 @@ export default function StravaConnect({ userId, isConnected, onConnectionUpdate 
               className="flex items-center gap-2"
             >
               <Activity size={16} />
-              {isSyncing ? '동기화 중...' : '데이터 동기화'}
+              {isSyncing ? "동기화 중..." : "데이터 동기화"}
             </Button>
           </div>
         )}

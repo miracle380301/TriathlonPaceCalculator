@@ -1,6 +1,5 @@
-import { storage } from './storage';
+import { stravaService } from './stravaService';
 import { calculatePaces, PaceResult } from '../shared/calculator';
-import type { StravaActivity } from '@shared/schema';
 
 interface ActivityStats {
   swim: {
@@ -38,10 +37,20 @@ interface TrainingRecommendation {
   };
 }
 
+interface StravaActivity {
+  id: string;
+  name: string;
+  type: string;
+  distance: number;
+  movingTime: number;
+  startDate: Date;
+  averageSpeed?: number;
+}
+
 export class TrainingPlanService {
   
   async analyzeUserPerformance(userId: string): Promise<ActivityStats> {
-    const activities = await storage.getUserRecentActivities(userId, 4);
+    const activities = await stravaService.getUserActivities(userId);
     
     const stats: ActivityStats = {
       swim: { totalDistance: 0, totalTime: 0, averagePace: 0, sessionCount: 0 },
@@ -208,26 +217,7 @@ export class TrainingPlanService {
     // Generate training recommendations
     const trainingPlan = this.generateTrainingPlan(comparison);
 
-    // Save to database
-    const plan = await storage.createTrainingPlan({
-      userId,
-      course,
-      goalTime: goalHours * 3600 + goalMinutes * 60 + goalSeconds,
-      currentPaces: {
-        swim: currentStats.swim,
-        bike: currentStats.bike,
-        run: currentStats.run
-      },
-      targetPaces: {
-        swim: { minutes: targetPaces.swimPace.minutes, seconds: targetPaces.swimPace.seconds },
-        bike: { speed: targetPaces.bikeSpeed },
-        run: { minutes: targetPaces.runPace.minutes, seconds: targetPaces.runPace.seconds }
-      },
-      weeklyPlan: trainingPlan
-    });
-
     return {
-      plan,
       comparison,
       trainingPlan,
       currentStats,

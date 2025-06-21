@@ -3,8 +3,11 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { stravaService } from "./stravaService";
 import { trainingPlanService } from "./trainingPlanService";
+import cors from "cors";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  app.use(cors({ origin: true, credentials: true }));
+
   // Basic test route
   app.get("/api/test", (req, res) => {
     res.json({ message: "API is working!" });
@@ -13,31 +16,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Strava OAuth routes
   app.get("/api/strava/auth", (req, res) => {
     const authUrl = stravaService.getAuthUrl();
+    console.log("@@@ Strava auth URL:", authUrl);
     res.json({ authUrl });
   });
 
   app.post("/api/strava/callback", async (req, res) => {
+    console.log("!!!Strava callback received:", req.body);
     try {
       const { code, userId } = req.body;
-      
+
       if (!code || !userId) {
         return res.status(400).json({ error: "Code and userId are required" });
       }
 
       const tokenData = await stravaService.exchangeCodeForTokens(code);
-      
-      // Update user with Strava tokens
-      await storage.updateUserStravaTokens(
+
+      console.log("Strava token data:", tokenData);
+
+      // Store user tokens and info in memory
+      storage.setUserStravaTokens(
         userId,
         tokenData.access_token,
         tokenData.refresh_token,
         new Date(tokenData.expires_at * 1000)
       );
 
-      // Update user with Strava athlete info
-      await storage.upsertUser({
-        id: userId,
-        email: null,
+      storage.updateUser(userId, {
         firstName: tokenData.athlete.firstname,
         lastName: tokenData.athlete.lastname,
         profileImageUrl: tokenData.athlete.profile,
@@ -54,7 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/strava/sync", async (req, res) => {
     try {
       const { userId } = req.body;
-      
+
       if (!userId) {
         return res.status(400).json({ error: "userId is required" });
       }
@@ -82,10 +86,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create personalized training plan
   app.post("/api/training/plan", async (req, res) => {
     try {
-      const { userId, course, goalHours, goalMinutes, goalSeconds, t1Minutes, t2Minutes } = req.body;
-      
+      const {
+        userId,
+        course,
+        goalHours,
+        goalMinutes,
+        goalSeconds,
+        t1Minutes,
+        t2Minutes,
+      } = req.body;
+
       if (!userId || !course) {
-        return res.status(400).json({ error: "userId and course are required" });
+        return res
+          .status(400)
+          .json({ error: "userId and course are required" });
       }
 
       const result = await trainingPlanService.createPersonalizedPlan(
@@ -95,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         goalMinutes || 0,
         goalSeconds || 0,
         t1Minutes || 0,
-        t2Minutes || 0
+        t2Minutes || 0,
       );
 
       res.json(result);
