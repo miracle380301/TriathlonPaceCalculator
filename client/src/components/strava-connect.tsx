@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 interface StravaConnectProps {
   userId: string;
   isConnected: boolean;
-  onConnectionUpdate: () => void;
+  onConnectionUpdate: (connected: boolean, activities: any[]) => void; // activities를 인자로 받음
 }
 
 export default function StravaConnect({
@@ -21,17 +21,18 @@ export default function StravaConnect({
   const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
 
+  console.log("userID : ", userId);
   const handleConnect = async () => {
+    console.log("Connecting to Strava...");
     try {
       setIsConnecting(true);
       const response = await apiRequest("GET", "/api/strava/auth");
       console.log("Strava auth response:", response);
 
       if (response.authUrl) {
-        // Store userId for callback
-        localStorage.setItem("stravaUserId", userId);
-        // Redirect to Strava authorization
-        window.location.href = response.authUrl;
+        window.location.href = response.authUrl; // 이게 빠졌으면 리다이렉트 안됨
+      } else {
+        throw new Error("No authUrl in response");
       }
     } catch (error) {
       console.error("Strava connect error:", error);
@@ -45,21 +46,39 @@ export default function StravaConnect({
     }
   };
 
+  const handleLogout = async () => {
+    // localStorage 초기화
+    localStorage.removeItem("stravaUserId");
+
+    // 백엔드에 로그아웃 요청 (선택사항)
+    await apiRequest("POST", "/api/strava/logout", {
+      userId, // 필요하면 넘기기
+    });
+
+    // 상태 초기화
+    onConnectionUpdate(false, null); // 연결 상태 false로 업데이트
+    toast({
+      title: "Strava 연결 해제됨",
+      variant: "default",
+      duration: 3000,
+    });
+  };
+
   const handleSync = async () => {
     try {
       setIsSyncing(true);
-      const activities = await apiRequest(`/api/activities/${userId}`, {
-        method: 'GET'
-      });
-      
+      const activities = await apiRequest("GET", `/api/activities/${userId}`);
+
+      console.log("Fetched activities:", activities);
+
       toast({
         title: "데이터 확인 완료",
         description: `최근 4주간 ${activities.length}개의 운동 기록을 확인했습니다.`,
       });
-      
-      onConnectionUpdate();
+
+      onConnectionUpdate(true, activities);
     } catch (error) {
-      console.error('Strava sync error:', error);
+      console.error("Strava sync error:", error);
       toast({
         title: "데이터 확인 실패",
         description: "활동 데이터 확인 중 문제가 발생했습니다.",
@@ -98,6 +117,7 @@ export default function StravaConnect({
       </div>
 
       <div className="space-y-4">
+        {" "}
         {!isConnected ? (
           <div className="text-center py-6">
             <div className="text-gray-500 mb-4">
@@ -126,10 +146,17 @@ export default function StravaConnect({
               onClick={handleSync}
               disabled={isSyncing}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-sports-blue text-blue-500 text-white border-blue-300 hover:bg-blue-50"
             >
               <Activity size={16} />
-              {isSyncing ? "동기화 중..." : "데이터 동기화"}
+              {isSyncing ? "현재 vs 목표 분석중..." : "현재 vs 목표 분석"}
+            </Button>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="flex items-center gap-2 text-red-500 border-red-300 hover:bg-red-50"
+            >
+              로그아웃
             </Button>
           </div>
         )}

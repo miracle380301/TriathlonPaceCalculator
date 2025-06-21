@@ -5,6 +5,9 @@ import { stravaService } from "./stravaService";
 import { trainingPlanService } from "./trainingPlanService";
 import cors from "cors";
 
+const tokenStore: { [key: string]: string } = {}; // { userId: access_token }
+const activityStore = {}; // { userId: activities[] }
+
 export async function registerRoutes(app: Express): Promise<Server> {
   app.use(cors({ origin: true, credentials: true }));
 
@@ -16,42 +19,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Strava OAuth routes
   app.get("/api/strava/auth", (req, res) => {
     const authUrl = stravaService.getAuthUrl();
-    console.log("@@@ Strava auth URL:", authUrl);
+    console.log("%%% Strava auth URL:", authUrl);
     res.json({ authUrl });
   });
 
-  app.post("/api/strava/callback", async (req, res) => {
-    console.log("!!!Strava callback received:", req.body);
-    try {
-      const { code, userId } = req.body;
+  // Save Strava token
+  app.post("/api/receive-token", async (req, res) => {
+    const data = await req.body;
 
-      if (!code || !userId) {
-        return res.status(400).json({ error: "Code and userId are required" });
-      }
+    const athlete_id = data.athlete_id;
+    const access_token = data.access_token;
+    console.log("%%% Strava access_token:", access_token);
+    console.log("%%% Strava athlete_id:", athlete_id);
 
-      const tokenData = await stravaService.exchangeCodeForTokens(code);
-
-      console.log("Strava token data:", tokenData);
-
-      // Store user tokens and info in memory
-      storage.setUserStravaTokens(
-        userId,
-        tokenData.access_token,
-        tokenData.refresh_token,
-        new Date(tokenData.expires_at * 1000)
-      );
-
-      storage.updateUser(userId, {
-        firstName: tokenData.athlete.firstname,
-        lastName: tokenData.athlete.lastname,
-        profileImageUrl: tokenData.athlete.profile,
-      });
-
-      res.json({ success: true, athlete: tokenData.athlete });
-    } catch (error: any) {
-      console.error("Strava callback error:", error);
-      res.status(500).json({ error: error.message });
+    if (!access_token) {
+      return res.status(400).json({ error: "No token received" });
     }
+
+    tokenStore[athlete_id] = access_token;
+    res.json({ message: "saved" });
+  });
+
+  // Get Strava token
+  app.get("/api/token-exists/:athlete_id", (req, res) => {
+    const { athlete_id } = req.params;
+
+    const token = tokenStore[athlete_id];
+    if (!token) {
+      return res.status(404).json({ exists: false });
+    }
+
+    return res.json({ exists: true });
   });
 
   // Sync Strava activities
@@ -120,10 +118,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user's training plans
-  app.get("/api/training/plans/:userId", async (req, res) => {
+  app.post("/api/training-plan", (req, res) => {
     try {
-      const { userId } = req.params;
-      const plans = await storage.getUserTrainingPlans(userId);
+      const { comparison } = req.body;
+      const plans = trainingPlanService.generateTrainingPlan(comparison);
       res.json(plans);
     } catch (error: any) {
       console.error("Get training plans error:", error);
@@ -135,13 +133,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/activities/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
-      const weeks = parseInt(req.query.weeks as string) || 4;
-      const activities = await storage.getUserRecentActivities(userId, weeks);
+      console.log("Fetching activities for user:", userId);
+      //const weeks = parseInt(req.query.weeks as string) || 4;
+      console.log(tokenStore);
+      const accessToken = tokenStore[userId];
+      if (!accessToken) {
+        throw new Error("Strava access token not found for this athlete");
+      }
+      const activities = await stravaService.getUserActivitiesOnce(accessToken);
+      //console.log("Fetched activities:", activities);
       res.json(activities);
     } catch (error: any) {
       console.error("Get activities error:", error);
       res.status(500).json({ error: error.message });
     }
+  });
+
+  app.post("/api/strava/logout", async (req, res) => {
+    const data = await req.body;
+    const userId = data.userId;
+
+    console.log(tokenStore);
+    if (tokenStore[userId]) {
+      delete tokenStore[userId];
+      console.log(`>>> Strava token for ${userId} deleted`);
+    }
+
+    res.json({ message: "Logged out" });
   });
 
   const httpServer = createServer(app);

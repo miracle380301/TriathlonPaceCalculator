@@ -40,8 +40,7 @@ export class StravaService {
   }
 
   getAuthUrl(): string {
-    const scope = "read,activity:read_all";
-    return `https://www.strava.com/oauth/authorize?client_id=${this.clientId}&response_type=code&redirect_uri=${encodeURIComponent(this.redirectUri)}&approval_prompt=force&scope=${scope}`;
+    return `https://strava-auth-server.onrender.com/login`;
   }
 
   async exchangeCodeForTokens(code: string): Promise<StravaTokenResponse> {
@@ -102,49 +101,55 @@ export class StravaService {
     }
   }
 
-  async getUserActivities(userId: string): Promise<StravaActivity[]> {
-    const user = storage.getUser(userId);
-    if (!user?.stravaAccessToken) {
-      throw new Error('User not connected to Strava');
+  async getUserActivitiesOnce(accessToken: string): Promise<StravaActivity[]> {
+    console.log("@@ getUserActivitiesOnce");
+    // Fetch activities from Strava API
+    const res = await fetch(
+      "https://www.strava.com/api/v3/athlete/activities?per_page=100&page=1",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch activities from Strava");
     }
 
-    let accessToken = user.stravaAccessToken;
+    const activities = await res.json();
 
-    // Check if token needs refresh
-    if (user.stravaTokenExpiry && new Date() > user.stravaTokenExpiry) {
-      if (user.stravaRefreshToken) {
-        const tokenData = await this.refreshAccessToken(user.stravaRefreshToken);
-        storage.setUserStravaTokens(
-          userId,
-          tokenData.access_token,
-          tokenData.refresh_token,
-          new Date(tokenData.expires_at * 1000)
-        );
-        accessToken = tokenData.access_token;
-      } else {
-        throw new Error('Strava token expired and no refresh token available');
-      }
-    }
-
-    // Fetch activities for the last 4 weeks
-    const activities = await this.getActivities(accessToken, 1, 100);
-    
-    // Filter for triathlon activities (Swim, Ride, Run) from last 4 weeks
     const fourWeeksAgo = new Date();
-    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
-    
-    return activities
-      .filter(activity => ['Swim', 'Ride', 'Run'].includes(activity.type))
-      .filter(activity => new Date(activity.start_date) > fourWeeksAgo)
-      .map(activity => ({
-        id: activity.id.toString(),
-        name: activity.name,
-        type: activity.type,
-        distance: Math.round(activity.distance),
-        movingTime: activity.moving_time,
-        startDate: new Date(activity.start_date),
-        averageSpeed: activity.average_speed ? activity.average_speed : undefined,
-      }));
+    fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 228);
+
+    const allActivities = activities;
+    // console.log("🔥 전체 활동 수:", allActivities.length);
+    // console.log("🔥 전체 활동 예시:", allActivities.slice(0, 3)); // 일부만 출력
+
+    const filteredActivities = allActivities.filter((activity: any) => {
+      // console.log("👉 activity.type:", activity.type);
+      // console.log("📆 activity.start_date:", activity.start_date);
+      // console.log("📆 기준일자:", fourWeeksAgo.toISOString());
+
+      const isTriathlon = ["Swim", "Ride", "Run"].includes(activity.type);
+      const isRecent = new Date(activity.start_date) > fourWeeksAgo;
+      return isTriathlon && isRecent;
+    });
+    // console.log("✅ 필터링된 활동 수:", filteredActivities.length);
+    // console.log("✅ 필터링된 활동 예시:", filteredActivities.slice(0, 3)); // 일부만 출력
+
+    const mappedActivities = filteredActivities.map((activity: any) => ({
+      id: activity.id.toString(),
+      name: activity.name,
+      type: activity.type,
+      distance: Math.round(activity.distance),
+      movingTime: activity.moving_time,
+      startDate: new Date(activity.start_date),
+      averageSpeed: activity.average_speed || undefined,
+    }));
+    //console.log("📦 최종 매핑된 활동:", mappedActivities.slice(0, 3)); // 일부만 출력
+
+    return mappedActivities;
   }
 }
 
