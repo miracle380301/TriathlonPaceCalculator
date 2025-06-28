@@ -10,19 +10,19 @@ import { calculatePaces, PaceResult } from "@/lib/calculator";
 
 export default function Calculator() {
   const [selectedCourse, setSelectedCourse] = useState<string | null>('olympic');
-  const [goalHours, setGoalHours] = useState<number>(0);
-  const [goalMinutes, setGoalMinutes] = useState<number>(0);
-  const [goalSeconds, setGoalSeconds] = useState<number>(0);
-  const [t1Minutes, setT1Minutes] = useState<number>(0);
-  const [t2Minutes, setT2Minutes] = useState<number>(0);
+  const [goalHours, setGoalHours] = useState<number | null>(null);
+  const [goalMinutes, setGoalMinutes] = useState<number | null>(null);
+  const [goalSeconds, setGoalSeconds] = useState<number | null>(null);
+  const [t1Minutes, setT1Minutes] = useState<number | null>(null);
+  const [t2Minutes, setT2Minutes] = useState<number | null>(null);
   const [results, setResults] = useState<PaceResult | null>(null);
   
   // Current pace inputs for comparison
-  const [swimGoalMinutes, setSwimGoalMinutes] = useState<number>(0);
-  const [swimGoalSeconds, setSwimGoalSeconds] = useState<number>(0);
-  const [bikeGoalKmh, setBikeGoalKmh] = useState<number>(0);
-  const [runGoalMinutes, setRunGoalMinutes] = useState<number>(0);
-  const [runGoalSeconds, setRunGoalSeconds] = useState<number>(0);
+  const [swimGoalMinutes, setSwimGoalMinutes] = useState<number | null>(null);
+  const [swimGoalSeconds, setSwimGoalSeconds] = useState<number | null>(null);
+  const [bikeGoalKmh, setBikeGoalKmh] = useState<number | null>(null);
+  const [runGoalMinutes, setRunGoalMinutes] = useState<number | null>(null);
+  const [runGoalSeconds, setRunGoalSeconds] = useState<number | null>(null);
   
   const { toast } = useToast();
 
@@ -48,16 +48,16 @@ export default function Calculator() {
     try {
       const calculatedResults = calculatePaces(
         selectedCourse,
-        goalHours,
-        goalMinutes,
-        goalSeconds,
-        t1Minutes,
-        t2Minutes,
-        swimGoalMinutes,
-        swimGoalSeconds,
-        bikeGoalKmh,
-        runGoalMinutes,
-        runGoalSeconds
+        goalHours ?? 0,
+        goalMinutes ?? 0,
+        goalSeconds ?? 0,
+        t1Minutes ?? 0,
+        t2Minutes ?? 0,
+        swimGoalMinutes ?? 0,
+        swimGoalSeconds ?? 0,
+        bikeGoalKmh ?? 0,
+        runGoalMinutes ?? 0,
+        runGoalSeconds ?? 0
       );
       
       setResults(calculatedResults);

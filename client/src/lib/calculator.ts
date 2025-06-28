@@ -22,19 +22,20 @@ export interface PaceResult {
   bikeTime: number;
   runTime: number;
   isWorldRecord: boolean;
-  totalPredictSeconds: number;
-  totalRaceTimeSeconds: number;
-  improvementTip: ImprovementTips | null;
+  
+  totalGoalSeconds: number;            // 목표 총시간
+  totalGoalRaceTimeSeconds: number;    // 목표 경기시간
+  totalPredictSeconds: number;         // 예상 총시간
+  totalPredictRaceTimeSeconds: number; // 예상 경기시간
+
+  totalRaceDiffernce: string;
+  totalRaceDiffernceStatus: string;
+  totalDiffernce: string;
+  totalDiffernceStatus: string;
+
   comparison?: {
-    swim: { current: string; target: string; difference: string; status: string };
-    bike: { current: string; target: string; difference: string; status: string };
-    run: { current: string; target: string; difference: string; status: string };
     totalTimeDifference: number; // in seconds
-    improvementSuggestions: {
-      swim: { reduceSeconds: number; newPace: string };
-      bike: { increaseKmh: number; newSpeed: string };
-      run: { reduceSeconds: number; newPace: string };
-    };
+    improvementSuggestions: ImprovementSuggestion
   };
 }
 
@@ -72,16 +73,104 @@ interface ImprovementInput {
   bikeSpeedDiff: number;
 }
 
-interface ImprovementTips {
-  swim?: {
-    timeReduce: number; // 단위: 초
-    newPace: {
-      minutes: number;
-      seconds: number;
-    };
-    message: string;
+interface CurrentStats {
+  swimPer100mSeconds: number;  // 예: 2분10초 = 130초
+  bikeSpeedKmh: number;        // 예: 31
+  runPaceSecondsPerKm: number; // 예: 5분30초 = 330초
+  swimDistanceM: number;       // 예: 1500
+  bikeDistanceKm: number;      // 예: 40 (임의 설정)
+  runDistanceKm: number;       // 예: 10
+}
+
+interface ImprovementSuggestion {
+  swimTimeReduceSeconds: number;
+  bikeSpeedIncreaseKmh: number;
+  runPaceReduceSecondsPerKm: number;
+  totalTimeReduceSeconds: number;
+  messages: string[];
+  swim: {
+    reduceSeconds: string;
+    newPace: string;
+  },
+  bike: {
+    increaseKmh: string;
+    newSpeed: string;
+  },
+  run: {
+    reduceSeconds: string;
+    newPace: string;
+  }
+}
+
+function suggestImprovement(
+  current: CurrentStats,
+  targetReduceSeconds: number
+): ImprovementSuggestion {
+  // 수영 목표 단축: 전체 단축시간의 15% 배정 (현실적 가정)
+  const swimTargetReduce = targetReduceSeconds * 0.15;
+
+  // 자전거 목표 단축: 전체 단축시간의 30%
+  const bikeTargetReduce = targetReduceSeconds * 0.40;
+
+  // 달리기 목표 단축: 전체 단축시간의 20%
+  const runTargetReduce = targetReduceSeconds * 0.15;
+
+  // 나머지 25%는 전환 등 기타 시간으로 가정 (계산에서 제외)
+
+  // 수영 단축을 초당 페이스 단축으로 변환
+  // 현재 총 수영 시간 = (swimPer100mSeconds) * (swimDistanceM / 100)
+  
+  const currentSwimTime = current.swimPer100mSeconds * (current.swimDistanceM / 100);
+  const newSwimTime = currentSwimTime - swimTargetReduce;
+  const newSwimPace = newSwimTime / (current.swimDistanceM / 100);
+
+  // 자전거 속도 향상: 현재 속도 + 속도 증가량으로 시간 단축 달성 계산
+  // 시간 = 거리 / 속도
+  // 목표 시간 = 현재 시간 - bikeTargetReduce
+  const currentBikeTime = current.bikeDistanceKm / current.bikeSpeedKmh * 3600; // 초 단위
+  const targetBikeTime = currentBikeTime - bikeTargetReduce;
+  const newBikeSpeed = current.bikeDistanceKm / (targetBikeTime / 3600);
+
+  // 달리기 페이스 단축 (초/km 단축)
+  // 현재 총 달리기 시간 = runPaceSecondsPerKm * runDistanceKm
+  // 목표 시간 = 현재 - runTargetReduce
+  const currentRunTime = current.runPaceSecondsPerKm * current.runDistanceKm;
+  const targetRunTime = currentRunTime - runTargetReduce;
+  const newRunPace = targetRunTime / current.runDistanceKm;
+
+  // 메시지 생성
+  const messages = [
+    `나머지 약 ${formatSecondsToMinSec(targetReduceSeconds * 0.30)}는 전환 시간 등으로 단축 목표로 잡으세요.`,
+  ];
+
+  const totalReduced = swimTargetReduce + bikeTargetReduce + runTargetReduce;
+
+  return {
+    swim: {
+        reduceSeconds: formatSecondsToMinSec(newSwimPace),
+        newPace: formatSecondsToMinSec(swimTargetReduce),
+    },
+    bike: {
+      increaseKmh: newBikeSpeed.toFixed(2),
+      newSpeed: formatSecondsToMinSec(bikeTargetReduce)
+    },
+    run: {
+      reduceSeconds: formatSecondsToMinSec(newRunPace),
+      newPace: formatSecondsToMinSec(runTargetReduce)
+    },
+    swimTimeReduceSeconds: swimTargetReduce,
+    bikeSpeedIncreaseKmh: newBikeSpeed - current.bikeSpeedKmh,
+    runPaceReduceSecondsPerKm: current.runPaceSecondsPerKm - newRunPace,
+    totalTimeReduceSeconds: totalReduced,
+    messages,
   };
-  // 추후 bike, run 도 추가 가능
+}
+
+// 보조 함수: 초 -> mm:ss 형식 문자열
+function formatSecondsToMinSec(seconds: number): string {
+  const min = Math.floor(seconds / 60);
+  const sec = Math.round(seconds % 60);
+  return sec === 0 ? `${min}분` : `${min}분 ${sec}초`;
 }
 
 export function formatTime(seconds: number): string {
@@ -123,38 +212,35 @@ export function secondsToHMS(totalSeconds: number): { hours: number; minutes: nu
   return { hours, minutes, seconds };
 }
 
-function getImprovementTip({
-  overSeconds,
-  swimTime,
-  bikeTime,
-  runTime,
-  swimTimeDiff,
-  runPaceDiff,
-  bikeSpeedDiff,
-}: ImprovementInput): ImprovementTips | null {
-  if (overSeconds <= 0) {
-    return null;
-  }
+interface ImprovementInput {
+  overSeconds: number; // 초 단위 초과 시간
+  swimTime: number;    // 초 단위 현재 수영 시간
+  bikeTime: number;    // 초 단위 현재 자전거 시간
+  runTime: number;     // 초 단위 현재 달리기 시간
+  swimTimeDiff: number;  // 초 단위 수영 느린 시간
+  runPaceDiff: number;   // 초 단위 달리기 페이스 개선 필요 시간 (ex: 1km당 초)
+  bikeSpeedDiff: number; // km/h 단위 자전거 속도 개선 필요량
+}
 
-  const tips: ImprovementTips = {};
+/**
+ * 초 단위 차이를 "시:분:초 느림/빠름" 형태 문자열로 변환
+ * @param {number} diffSeconds - 초 단위 차이 (양수: 느림, 음수: 빠름)
+ * @returns {string} 변환된 문자열 예: "1:12:30 느림", "0:05:00 빠름"
+ */
+function formatTimeDifference(diffSeconds: number) {
+  const absSeconds = Math.abs(diffSeconds);
 
-  if (swimTimeDiff > 0) {
-    const newSwimTime = swimTime - swimTimeDiff;
-    const newPaceSeconds = Math.floor(newSwimTime / 15); // 1.5km = 15 * 100m
-    const newPaceMinutes = Math.floor(newPaceSeconds / 60);
-    const newPaceSecsRemainder = newPaceSeconds % 60;
+  const hours = Math.floor(absSeconds / 3600);
+  const minutes = Math.floor((absSeconds % 3600) / 60);
+  const seconds = absSeconds % 60;
 
-    tips.swim = {
-      timeReduce: swimTimeDiff,
-      newPace: {
-        minutes: newPaceMinutes,
-        seconds: newPaceSecsRemainder,
-      },
-      message: `수영에서 ${Math.round(swimTimeDiff / 60)}분 단축이 필요합니다.`,
-    };
-  }
+  const timeStr = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds
+    .toString()
+    .padStart(2, '0')}`;
 
-  return tips;
+  const status = diffSeconds > 0 ? '느림' : '빠름';
+
+  return `${timeStr} ${status}`;
 }
 
 export function calculatePaces(
@@ -164,47 +250,59 @@ export function calculatePaces(
   goalSeconds: number,
   t1Minutes: number,
   t2Minutes: number,
-  currentSwimMinutes?: number,
-  currentSwimSeconds?: number,
-  currentBikeKmh?: number,
-  currentRunMinutes?: number,
-  currentRunSeconds?: number
+  currentSwimMinutes: number,
+  currentSwimSeconds: number,
+  currentBikeKmh: number,
+  currentRunMinutes: number,
+  currentRunSeconds: number
 ): PaceResult {
-  const totalGoalSeconds = goalHours * 3600 + goalMinutes * 60 + goalSeconds;
+  const totalGoalSeconds = goalHours * 3600 + goalMinutes * 60 + goalSeconds; // 목표 경기시간
   const transitionSeconds = (t1Minutes + t2Minutes) * 60;
-  const raceTimeSeconds = totalGoalSeconds - transitionSeconds;
+  const totalGoalRaceTimeSeconds = totalGoalSeconds - transitionSeconds;
 
   // Check world record
   const records = worldRecords[course as keyof WorldRecords];
   const isWorldRecord = totalGoalSeconds < Math.min(records.men, records.women);
 
-  // Calculate splits based on typical race distribution
-  const swimPercentage = course === 'olympic' ? 0.20 : 0.15;
-  const bikePercentage = course === 'olympic' ? 0.55 : 0.60;
-  const runPercentage = course === 'olympic' ? 0.25 : 0.25;
-
-  const swimTime = Math.floor(raceTimeSeconds * swimPercentage);
-  const bikeTime = Math.floor(raceTimeSeconds * bikePercentage);
-  const runTime = Math.floor(raceTimeSeconds * runPercentage);
-
   const courseInfo = courseData[course];
+  const swimDistance = course === 'olympic' ? 1500: 3800;
+  const bikeDistance = course === 'olympic' ? 40: 180;
+  const runDistance = course === 'olympic' ? 10: 42.195;
 
-  // Calculate paces
-  // Swimming: per 100m pace
-  const swimPaceSeconds = Math.floor(swimTime / (courseInfo.swim * 10)); // per 100m
-  const swimPaceMinutes = Math.floor(swimPaceSeconds / 60);
-  const swimPaceSecsRemainder = swimPaceSeconds % 60;
+  const swimPaceMinutes = currentSwimMinutes;
+  const swimPaceSecsRemainder = currentSwimSeconds;
+  const swimTime = Math.floor(((swimPaceMinutes * 60) + swimPaceSecsRemainder) * (swimDistance / 100))
 
-  // Cycling: average speed in km/h
-  const bikeSpeed = parseFloat((courseInfo.bike / (bikeTime / 3600)).toFixed(1));
+  const bikeSpeed = currentBikeKmh;
+  const bikeTime = Math.floor(bikeDistance / bikeSpeed * 3600)
 
-  // Running: per km pace
-  const runPaceSeconds = Math.floor(runTime / courseInfo.run); // per km
-  const runPaceMinutes = Math.floor(runPaceSeconds / 60);
-  const runPaceSecsRemainder = runPaceSeconds % 60;
+  const runPaceMinutes = currentRunMinutes;
+  const runPaceSecsRemainder = currentRunSeconds;
+  const runTime = Math.floor(runDistance * ((runPaceMinutes * 60) + runPaceSecsRemainder))
+
+  const totalPredictSeconds = swimTime + bikeTime + runTime;   // 예상 총 경기시간(바꿈터 포함)
+  const totalPredictRaceTimeSeconds = totalPredictSeconds - transitionSeconds; // 예상 경기시간
+
+  const totalRaceDiffernce = totalPredictRaceTimeSeconds > totalGoalRaceTimeSeconds ? formatTimeDifference(totalPredictRaceTimeSeconds - totalGoalRaceTimeSeconds) : formatTimeDifference(totalPredictRaceTimeSeconds - totalGoalRaceTimeSeconds);
+  const totalRaceDiffernceStatus = totalPredictRaceTimeSeconds > totalGoalRaceTimeSeconds ? 'slower' : 'faster';
+  const totalDiffernce =  totalPredictSeconds > totalGoalSeconds ? formatTimeDifference(totalPredictSeconds - totalGoalSeconds) : formatTimeDifference(totalPredictSeconds - totalGoalSeconds);
+  const totalDiffernceStatus =  totalPredictSeconds > totalGoalSeconds ? 'slower' : 'faster';
+
+  const timeRaceDifference = totalPredictRaceTimeSeconds - totalGoalRaceTimeSeconds;
+  const timeDifference = totalPredictSeconds - totalGoalSeconds;
+
+  const currentStats: CurrentStats = {
+    swimPer100mSeconds: currentSwimMinutes * 60 + currentSwimSeconds,   // 2분 10초
+    bikeSpeedKmh: bikeSpeed,
+    runPaceSecondsPerKm: currentRunMinutes * 60 + currentRunSeconds,  // 5분 30초
+    swimDistanceM: swimDistance,
+    bikeDistanceKm: bikeDistance,
+    runDistanceKm: runDistance,
+  };
+
 
   let comparison;
-  
+
   // Calculate comparison if current paces are provided
   if (currentSwimMinutes !== undefined && currentBikeKmh !== undefined && currentRunMinutes !== undefined && 
       (currentSwimMinutes > 0 || currentBikeKmh > 0 || currentRunMinutes > 0)) {
@@ -214,68 +312,35 @@ export function calculatePaces(
     const currentBikeTimeSeconds = (courseInfo.bike / currentBikeKmh) * 3600; // distance / speed * 3600
     const currentRunTimeSeconds = (currentRunMinutes * 60 + (currentRunSeconds || 0)) * courseInfo.run; // per km to total
     const currentTotalSeconds = currentSwimTimeSeconds + currentBikeTimeSeconds + currentRunTimeSeconds + (t1Minutes + t2Minutes) * 60;
-    
-    const timeDifference = currentTotalSeconds - totalGoalSeconds;
-    
-    // Calculate what needs to be improved
-    const improvementPerDiscipline = Math.abs(timeDifference) / 3; // Distribute equally across 3 disciplines
-    
+
+    const targetReduceSeconds = timeRaceDifference;
+    const suggestion = suggestImprovement(currentStats, targetReduceSeconds);
+
     comparison = {
-      swim: {
-        current: `${currentSwimMinutes}분 ${currentSwimSeconds || 0}초 (100m당)`,
-        target: `${swimPaceMinutes}분 ${swimPaceSecsRemainder}초 (100m당)`,
-        difference: currentSwimTimeSeconds > swimTime ? `${Math.round((currentSwimTimeSeconds - swimTime) / 60)}분 느림` : `${Math.round((swimTime - currentSwimTimeSeconds) / 60)}분 빠름`,
-        status: currentSwimTimeSeconds > swimTime ? 'slower' : 'faster'
-      },
-      bike: {
-        current: `${currentBikeKmh}km/h`,
-        target: `${bikeSpeed}km/h`,
-        difference: currentBikeKmh < bikeSpeed ? `${(bikeSpeed - currentBikeKmh).toFixed(1)}km/h 느림` : `${(currentBikeKmh - bikeSpeed).toFixed(1)}km/h 빠름`,
-        status: currentBikeKmh < bikeSpeed ? 'slower' : 'faster'
-      },
-      run: {
-        current: `${currentRunMinutes}분 ${currentRunSeconds || 0}초 (km당)`,
-        target: `${runPaceMinutes}분 ${runPaceSecsRemainder}초 (km당)`,
-        difference: currentRunTimeSeconds > runTime ? `${Math.round((currentRunTimeSeconds - runTime) / 60)}분 느림` : `${Math.round((runTime - currentRunTimeSeconds) / 60)}분 빠름`,
-        status: currentRunTimeSeconds > runTime ? 'slower' : 'faster'
-      },
       totalTimeDifference: timeDifference,
-      improvementSuggestions: {
-        swim: {
-          reduceSeconds: Math.round(improvementPerDiscipline / (courseInfo.swim * 10)), // per 100m reduction needed
-          newPace: `${Math.floor((currentSwimMinutes * 60 + (currentSwimSeconds || 0) - improvementPerDiscipline / (courseInfo.swim * 10)) / 60)}분 ${Math.round((currentSwimMinutes * 60 + (currentSwimSeconds || 0) - improvementPerDiscipline / (courseInfo.swim * 10)) % 60)}초`
-        },
-        bike: {
-          increaseKmh: parseFloat((courseInfo.bike / ((courseInfo.bike / currentBikeKmh) * 3600 - improvementPerDiscipline) * 3600 - currentBikeKmh).toFixed(1)),
-          newSpeed: `${(courseInfo.bike / ((courseInfo.bike / currentBikeKmh) * 3600 - improvementPerDiscipline) * 3600).toFixed(1)}km/h`
-        },
-        run: {
-          reduceSeconds: Math.round(improvementPerDiscipline / courseInfo.run), // per km reduction needed
-          newPace: `${Math.floor((currentRunMinutes * 60 + (currentRunSeconds || 0) - improvementPerDiscipline / courseInfo.run) / 60)}분 ${Math.round((currentRunMinutes * 60 + (currentRunSeconds || 0) - improvementPerDiscipline / courseInfo.run) % 60)}초`
-        }
-      }
+      improvementSuggestions: suggestion
     };
   }
 
   return {
-    swimPace: { minutes: swimPaceMinutes, seconds: swimPaceSecsRemainder },
+    swimPace: { minutes: swimPaceMinutes!, seconds: swimPaceSecsRemainder! },
     bikeSpeed,
     runPace: { minutes: runPaceMinutes, seconds: runPaceSecsRemainder },
     swimTime,
     bikeTime,
     runTime,
     isWorldRecord,
-    totalPredictSeconds: raceTimeSeconds,
-    totalRaceTimeSeconds: totalGoalSeconds,
-    improvementTip: getImprovementTip({
-      overSeconds: 0,
-      swimTime,
-      bikeTime,
-      runTime,
-      swimTimeDiff: 0,
-      runPaceDiff: 0,
-      bikeSpeedDiff: 0,
-    }),
-    comparison
+    
+    totalGoalSeconds: totalGoalSeconds,
+    totalGoalRaceTimeSeconds: totalGoalRaceTimeSeconds,
+    totalPredictSeconds: totalPredictSeconds,
+    totalPredictRaceTimeSeconds: totalPredictRaceTimeSeconds,
+
+    totalRaceDiffernce: totalRaceDiffernce,
+    totalRaceDiffernceStatus: totalRaceDiffernceStatus,
+    totalDiffernce: totalDiffernce,
+    totalDiffernceStatus: totalDiffernceStatus,
+
+    comparison: comparison
   };
 }

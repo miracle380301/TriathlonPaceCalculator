@@ -5,18 +5,14 @@ import { PaceResult, formatTime, formatPaceTime, formatTimeKorean } from "@/lib/
 
 interface ResultsDisplayProps {
   results: PaceResult | null;
-  t1Minutes: number;
-  t2Minutes: number;
+  t1Minutes: number | null;
+  t2Minutes: number| null;
   totalPredictSeconds?: number;
   totalRaceTimeSeconds?: number;
 }
 
 function formatSecondsToKoreanTime(totalSeconds: number): string {
   return formatTimeKorean(totalSeconds);
-}
-
-function getOverMinutes(targetSeconds: number, predictSeconds: number): number {
-  return Math.floor((predictSeconds - targetSeconds) / 60);
 }
 
 export default function ResultsDisplay({
@@ -28,21 +24,15 @@ export default function ResultsDisplay({
     return null;
   }
 
-  const overMinutes = getOverMinutes(
-    results.totalRaceTimeSeconds,
-    results.totalPredictSeconds,
-  );
-
   return (
     <Card className="p-6 mb-6">
       <div className="flex items-center gap-2 mb-6">
-        <Target className="text-sports-blue" size={20} />
-        <h2 className="text-xl font-semibold text-neutral-dark">목표 페이스 결과</h2>
+        <TrendingUp className="text-sports-blue" size={20} />
+        <h2 className="text-xl font-semibold text-neutral-dark">예상 페이스 및 시간</h2>
       </div>
 
       {/* 페이스 카드들 */}
       <div className="grid md:grid-cols-3 gap-6 mb-8">
-        {/* 수영 페이스 */}
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-blue-500 p-2 rounded-lg">
@@ -61,7 +51,6 @@ export default function ResultsDisplay({
           </div>
         </div>
 
-        {/* 자전거 속도 */}
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-green-500 p-2 rounded-lg">
@@ -80,7 +69,6 @@ export default function ResultsDisplay({
           </div>
         </div>
 
-        {/* 달리기 페이스 */}
         <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="bg-orange-500 p-2 rounded-lg">
@@ -100,7 +88,68 @@ export default function ResultsDisplay({
         </div>
       </div>
 
-      {/* 전환 시간 및 총 시간 */}
+      {/* 예상시간: 전환 시간 및 총 시간 */}
+      <div className="bg-gray-50 rounded-xl p-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div>
+            <div className="text-lg font-semibold text-gray-800">
+              {t1Minutes}분
+            </div>
+            <div className="text-gray-500">T1 (수영→자전거)</div>
+          </div>
+          <div>
+            <div className="text-lg font-semibold text-gray-800">
+              {t2Minutes}분
+            </div>
+            <div className="text-gray-500">T2 (자전거→달리기)</div>
+          </div>
+          <div>
+              <div className="text-lg font-semibold 'text-sports-blue">
+                {formatTime(results.totalPredictRaceTimeSeconds)}
+              </div>
+
+            <div className="text-gray-500">
+              경기시간
+              <div className="text-xs text-gray-400 p-2">
+                <div
+                  className={`text-xs p-2 flex flex-col items-center gap-1 text-center ${
+                    results.totalRaceDiffernceStatus === 'slower' ? 'text-red-500' : 'text-green-500'
+                  }`}
+                >
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div>
+              <div
+                className={`text-lg font-semibold ${
+                  results.totalRaceDiffernceStatus === 'slower' ? 'text-red-500' : 'text-achievement-green'
+                }`}
+              >
+                {formatTime(results.totalPredictSeconds)}
+              </div>
+            <div className="text-gray-500">총 시간</div>
+              <div className="text-xs text-gray-400 p-2">
+                <div
+                  className={`text-xs p-2 flex flex-col items-center gap-1 text-center ${
+                    results.totalDiffernceStatus === 'slower' ? 'text-red-500' : 'text-green-500'
+                  }`}
+                >
+                  <span className="font-bold">
+                    {results.totalDiffernceStatus === 'slower' ? '🔻' : '✅'}{results.totalDiffernce}
+                  </span>
+                </div>
+              </div>            
+          </div>
+        </div>
+      </div>
+      {/* 목표시간 : 전환 시간 및 총 시간 */}
+      <div className="flex items-center gap-2 mb-6">
+        <Target className="text-sports-blue" size={20} />
+        <h2 className="text-xl font-semibold text-neutral-dark">목표 시간</h2>
+      </div>
+
       <div className="bg-gray-50 rounded-xl p-4 mb-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
@@ -117,28 +166,28 @@ export default function ResultsDisplay({
           </div>
           <div>
             <div className="text-lg font-semibold text-sports-blue">
-              {formatTime(results.totalPredictSeconds)}
+              {formatTime(results.totalGoalRaceTimeSeconds)}
             </div>
             <div className="text-gray-500">경기시간</div>
           </div>
           <div>
             <div className="text-lg font-semibold text-achievement-green">
-              {formatTime(results.totalRaceTimeSeconds)}
+              {formatTime(results.totalGoalSeconds)}
             </div>
             <div className="text-gray-500">총 시간</div>
           </div>
         </div>
-      </div>
+      </div>      
 
       {/* Performance Comparison */}
       {results?.comparison && (
         <div className="mt-8 p-6 bg-gray-50 rounded-xl">
-          <h3 className="text-lg font-semibold text-neutral-dark mb-4 flex items-center gap-2">
+          {/* <h3 className="text-lg font-semibold text-neutral-dark mb-4 flex items-center gap-2">
             <TrendingUp className="text-sports-blue" size={20} />
             현재 vs 목표 페이스 비교
-          </h3>
+          </h3> */}
           
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
+          {/* <div className="grid md:grid-cols-3 gap-4 mb-6">
             <div className="bg-blue-50 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Waves className="text-blue-600" size={16} />
@@ -180,7 +229,7 @@ export default function ResultsDisplay({
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Total Time Difference */}
           <div className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-4 mb-4">
@@ -205,24 +254,33 @@ export default function ResultsDisplay({
             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
               <h4 className="font-semibold text-yellow-800 mb-3">💡 개선 제안</h4>
               <p className="text-sm text-yellow-700 mb-3">
-                목표 시간 달성을 위해 각 종목에서 다음과 같이 개선하면 됩니다:
+                목표 시간에 가까워지려면 각 종목에서 이렇게 시도해보세요
               </p>
               <div className="grid md:grid-cols-3 gap-3 text-sm">
                 <div className="bg-white rounded-lg p-3">
                   <div className="font-medium text-blue-700 mb-1">🏊 수영</div>
-                  <div>100m당 <span className="font-bold">{results.comparison.improvementSuggestions.swim.reduceSeconds}초</span> 단축</div>
-                  <div className="text-gray-600">→ {results.comparison.improvementSuggestions.swim.newPace}</div>
+                  <div>100m당 <span className="font-bold">{results.comparison.improvementSuggestions.swim.reduceSeconds}</span></div>
+                  <div className="text-gray-600">→ {results.comparison.improvementSuggestions.swim.newPace} 단축</div>
                 </div>
                 <div className="bg-white rounded-lg p-3">
                   <div className="font-medium text-green-700 mb-1">🚴 자전거</div>
                   <div>평균 <span className="font-bold">{results.comparison.improvementSuggestions.bike.increaseKmh}km/h</span> 향상</div>
-                  <div className="text-gray-600">→ {results.comparison.improvementSuggestions.bike.newSpeed}</div>
+                  <div className="text-gray-600">→ {results.comparison.improvementSuggestions.bike.newSpeed} 단축</div>
                 </div>
                 <div className="bg-white rounded-lg p-3">
                   <div className="font-medium text-orange-700 mb-1">🏃 달리기</div>
-                  <div>km당 <span className="font-bold">{results.comparison.improvementSuggestions.run.reduceSeconds}초</span> 단축</div>
-                  <div className="text-gray-600">→ {results.comparison.improvementSuggestions.run.newPace}</div>
+                  <div>km당 <span className="font-bold">{results.comparison.improvementSuggestions.run.reduceSeconds}</span></div>
+                  <div className="text-gray-600">→ {results.comparison.improvementSuggestions.run.newPace} 단축</div>
                 </div>
+                 {/* 🔽 여기 messages 출력 */}
+                 {results.comparison.improvementSuggestions.messages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white rounded-lg p-3 md:col-span-3 text-gray-700"
+                    >
+                      {msg}
+                    </div>
+                  ))}
               </div>
             </div>
           )}
