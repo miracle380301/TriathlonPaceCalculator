@@ -15,9 +15,9 @@ export interface WorldRecords {
 }
 
 export interface PaceResult {
-  swimPace: { minutes: number; seconds: number };
-  bikeSpeed: number;
-  runPace: { minutes: number; seconds: number };
+  swimPace: { swimDistance: number; minutes: number; seconds: number };
+  bikePace: { bikeDistance: number; bikeSpeed: number; } 
+  runPace: { runDistance: number; minutes: number; seconds: number };
   swimTime: number;
   bikeTime: number;
   runTime: number;
@@ -323,9 +323,9 @@ export function calculatePaces(
   }
 
   return {
-    swimPace: { minutes: swimPaceMinutes!, seconds: swimPaceSecsRemainder! },
-    bikeSpeed,
-    runPace: { minutes: runPaceMinutes, seconds: runPaceSecsRemainder },
+    swimPace: { swimDistance: swimDistance, minutes: swimPaceMinutes!, seconds: swimPaceSecsRemainder! },
+    bikePace : {bikeDistance: bikeDistance, bikeSpeed: bikeSpeed},
+    runPace: { runDistance: runDistance, minutes: runPaceMinutes, seconds: runPaceSecsRemainder },
     swimTime,
     bikeTime,
     runTime,

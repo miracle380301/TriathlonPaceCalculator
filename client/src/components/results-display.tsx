@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Target, Waves, Bike, Footprints, Trophy, Clock, TrendingUp } from "lucide-react";
 import { PaceResult, formatTime, formatPaceTime, formatTimeKorean } from "@/lib/calculator";
+import { Button } from "@/components/ui/button";
+import { createTCX } from '../lib/createTcx';
 
 interface ResultsDisplayProps {
   results: PaceResult | null;
@@ -15,6 +16,35 @@ function formatSecondsToKoreanTime(totalSeconds: number): string {
   return formatTimeKorean(totalSeconds);
 }
 
+function handleDownload({results,
+  t1Minutes,
+  t2Minutes
+}: ResultsDisplayProps) {
+  if (!results) return; // Add this null check
+  const date = new Date().toISOString();
+
+  const trainingPlan = [
+    { type: 'Swim', distance: results.swimPace.swimDistance, duration: results.swimTime },
+    { type: 'T1', distance: 0, duration: t1Minutes ?? 0 },
+    { type: 'Bike', distance: results.bikePace.bikeDistance * 1000, duration: results.bikeTime },
+    { type: 'T2', distance: 0, duration: t2Minutes ?? 0  },
+    { type: 'Run', distance: results.runPace.runDistance * 1000, duration: results.runTime },
+  ];
+
+  const tcx = createTCX({ date, activities: trainingPlan });
+
+  const blob = new Blob([tcx], { type: 'application/xml' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'triathlon_training_plan.tcx';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 export default function ResultsDisplay({
   results,
   t1Minutes,
@@ -26,11 +56,21 @@ export default function ResultsDisplay({
 
   return (
     <Card className="p-6 mb-6">
-      <div className="flex items-center gap-2 mb-6">
-        <TrendingUp className="text-sports-blue" size={20} />
-        <h2 className="text-xl font-semibold text-neutral-dark">예상 페이스 및 시간</h2>
-      </div>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2 mb-6">
+          <TrendingUp className="text-sports-blue" size={20} />
+          <h2 className="text-xl font-semibold text-neutral-dark">예상 페이스 및 시간</h2>
+        </div>
 
+        <Button
+          onClick={() => handleDownload({results, t1Minutes, t2Minutes})}
+          className="bg-neutral-400 text-white py-2 px-4 rounded-lg font-semibold hover:bg-neutral-500 transition-colors duration-200 flex items-center gap-1 h-auto"
+        >
+          <Clock className="text-white" size={16} />
+            TCX 파일 다운로드
+        </Button>
+      </div>
+      
       {/* 페이스 카드들 */}
       <div className="grid md:grid-cols-3 gap-6 mb-8">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5">
@@ -60,7 +100,7 @@ export default function ResultsDisplay({
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-900 mb-1">
-              {results.bikeSpeed}km/h
+              {results.bikePace.bikeSpeed}km/h
             </div>
             <div className="text-green-700 text-sm">평균 속도</div>
             <div className="text-green-600 text-xs mt-2">
