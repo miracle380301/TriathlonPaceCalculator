@@ -99,7 +99,25 @@ const translations = {
     expectedPaceInput: '예상종목별 페이스 입력',
     minPer100m: '분 /100m',
     minPerKm: '분 /km',
-    calculatePace: '페이스 계산하기'
+    calculatePace: '페이스 계산하기',
+    // Results Display
+    goalTime: '목표 시간',
+    totalTimeText: '총 시간',
+    raceTimeText: '경기시간',
+    t1TransitionText: 'T1 (수영→자전거)',
+    t2TransitionText: 'T2 (자전거→달리기)',
+    overallTimeDiff: '전체 시간 차이',
+    slowerThanGoal: '목표보다',
+    fasterThanGoal: '목표보다',
+    slowText: '느림',
+    fastText: '빠름',
+    sameAsGoalTime: '목표 시간과 동일',
+    improvementSuggestionsText: '개선 제안',
+    improvementDescText: '목표 시간에 가까워지려면 각 종목에서 이렇게 시도해보세요',
+    perText: '당',
+    improveText: '향상',
+    averageText: '평균',
+    shortenText: '단축'
   },
   en: {
     appTitle: 'Triathlon Pace Calculator',
@@ -190,7 +208,25 @@ const translations = {
     expectedPaceInput: 'Expected Pace Input by Sport',
     minPer100m: 'min /100m',
     minPerKm: 'min /km',
-    calculatePace: 'Calculate Pace'
+    calculatePace: 'Calculate Pace',
+    // Results Display
+    goalTime: 'Goal Time',
+    totalTimeText: 'Total Time',
+    raceTimeText: 'Race Time',
+    t1TransitionText: 'T1 (Swim→Bike)',
+    t2TransitionText: 'T2 (Bike→Run)',
+    overallTimeDiff: 'Overall Time Difference',
+    slowerThanGoal: 'Slower than goal by',
+    fasterThanGoal: 'Faster than goal by',
+    slowText: 'slower',
+    fastText: 'faster',
+    sameAsGoalTime: 'Same as goal time',
+    improvementSuggestionsText: 'Improvement Suggestions',
+    improvementDescText: 'To get closer to your goal time, try these improvements in each discipline',
+    perText: 'per',
+    improveText: 'improve',
+    averageText: 'average',
+    shortenText: 'reduce'
   }
 };
 

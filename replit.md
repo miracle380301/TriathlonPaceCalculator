@@ -24,6 +24,8 @@
 ✓ 다크/라이트 모드 토글 기능 추가 완료
 ✓ 한국어/영어 언어 전환 기능 추가 완료
 ✓ world-record-alert.tsx, training-tips.tsx, theme-toggle.tsx, results-display.tsx 한글/영어 번역 적용 완료
+✓ goal-time-form.tsx에 한글/영어 번역 적용 완료
+✓ results-display.tsx 다크 모드 스타일 및 완전한 번역 적용 완료
 
 ## 아키텍처
 - **Frontend**: React + TypeScript + Vite
