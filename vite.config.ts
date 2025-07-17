@@ -29,6 +29,9 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    host: "0.0.0.0", // 👉 외부 접속 허용
+    port: 5173, // 👉 Replit이 덮어쓰지 못하게 강제
+    allowedHosts: true, // 👉 Blocked 방지
     fs: {
       strict: true,
       deny: ["**/.*"],
