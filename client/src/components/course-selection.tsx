@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Waves, Bike, Footprints, Trophy } from "lucide-react";
 import { worldRecords } from "@/lib/calculator";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CourseSelectionProps {
   selectedCourse: string | null;
@@ -8,14 +9,16 @@ interface CourseSelectionProps {
 }
 
 export default function CourseSelection({ selectedCourse, onCourseSelect }: CourseSelectionProps) {
+  const { t } = useLanguage();
+  
   const courses = [
     {
       id: 'olympic',
-      name: '올림픽 코스',
+      name: t('olympicCourse'),
       distances: [
-        { icon: Waves, label: '수영: 1.5km', color: 'text-blue-500' },
-        { icon: Bike, label: '사이클: 40km', color: 'text-green-500' },
-        { icon: Footprints, label: '달리기: 10km', color: 'text-orange-500' }
+        { icon: Waves, label: `${t('swimming')}: 1.5km`, color: 'text-blue-500' },
+        { icon: Bike, label: `${t('cycling')}: 40km`, color: 'text-green-500' },
+        { icon: Footprints, label: `${t('running')}: 10km`, color: 'text-orange-500' }
       ],
       records: {
         men: '1:40:49',
@@ -24,11 +27,11 @@ export default function CourseSelection({ selectedCourse, onCourseSelect }: Cour
     },
     {
       id: 'ironman',
-      name: '아이언맨 코스',
+      name: t('ironmanCourse'),
       distances: [
-        { icon: Waves, label: '수영: 3.8km', color: 'text-blue-500' },
-        { icon: Bike, label: '사이클: 180km', color: 'text-green-500' },
-        { icon: Footprints, label: '달리기: 42.195km', color: 'text-orange-500' }
+        { icon: Waves, label: `${t('swimming')}: 3.8km`, color: 'text-blue-500' },
+        { icon: Bike, label: `${t('cycling')}: 180km`, color: 'text-green-500' },
+        { icon: Footprints, label: `${t('running')}: 42.195km`, color: 'text-orange-500' }
       ],
       records: {
         men: '7:35:39',
@@ -39,9 +42,9 @@ export default function CourseSelection({ selectedCourse, onCourseSelect }: Cour
 
   return (
     <Card className="p-6 mb-6">
-      <h2 className="text-xl font-semibold text-neutral-dark mb-4 flex items-center gap-2">
+      <h2 className="text-xl font-semibold text-neutral-dark dark:text-foreground mb-4 flex items-center gap-2">
         <Trophy className="text-sports-blue" size={20} />
-        코스 선택
+        {t('courseSelection')}
       </h2>
       
       <div className="grid md:grid-cols-2 gap-4 mb-6">

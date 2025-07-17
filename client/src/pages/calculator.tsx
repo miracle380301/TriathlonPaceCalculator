@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
 import CourseSelection from "@/components/course-selection";
 import GoalTimeForm from "@/components/goal-time-form";
 import WorldRecordAlert from "@/components/world-record-alert";
@@ -25,6 +28,7 @@ export default function Calculator() {
   const [runGoalSeconds, setRunGoalSeconds] = useState<number | null>(null);
   
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleCalculate = () => {
     if (!selectedCourse) {
