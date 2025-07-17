@@ -53,13 +53,13 @@ export default function CourseSelection({ selectedCourse, onCourseSelect }: Cour
             key={course.id}
             className={`border-2 rounded-xl p-4 cursor-pointer transition-colors duration-200 ${
               selectedCourse === course.id
-                ? 'border-sports-blue bg-blue-50'
-                : 'border-gray-200 hover:border-sports-blue'
+                ? 'border-sports-blue bg-blue-50 dark:bg-blue-900/20'
+                : 'border-gray-200 dark:border-gray-600 hover:border-sports-blue'
             }`}
             onClick={() => onCourseSelect(course.id)}
           >
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-neutral-dark">{course.name}</h3>
+              <h3 className="font-semibold text-neutral-dark dark:text-foreground">{course.name}</h3>
               <div className={`w-4 h-4 rounded-full border-2 ${
                 selectedCourse === course.id
                   ? 'bg-sports-blue border-sports-blue'
@@ -67,7 +67,7 @@ export default function CourseSelection({ selectedCourse, onCourseSelect }: Cour
               }`} />
             </div>
             
-            <div className="space-y-2 text-sm text-gray-600">
+            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
               {course.distances.map((distance, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <distance.icon className={`${distance.color} w-4 h-4`} />
@@ -76,11 +76,11 @@ export default function CourseSelection({ selectedCourse, onCourseSelect }: Cour
               ))}
             </div>
             
-            <div className="mt-4 pt-3 border-t border-gray-100">
-              <div className="text-xs text-gray-500 mb-1">세계기록</div>
-              <div className="text-sm font-medium text-neutral-dark">
-                <span className="text-blue-600">남자: {course.records.men}</span> | {' '}
-                <span className="text-pink-600">여자: {course.records.women}</span>
+            <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('worldRecord')}</div>
+              <div className="text-sm font-medium text-neutral-dark dark:text-foreground">
+                <span className="text-blue-600">{t('men')}: {course.records.men}</span> | {' '}
+                <span className="text-pink-600">{t('women')}: {course.records.women}</span>
               </div>
             </div>
           </div>

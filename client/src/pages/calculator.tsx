@@ -33,8 +33,8 @@ export default function Calculator() {
   const handleCalculate = () => {
     if (!selectedCourse) {
       toast({
-        title: "코스를 선택해주세요",
-        description: "올림픽 코스 또는 아이언맨 코스를 선택해주세요.",
+        title: t('selectCourse'),
+        description: t('selectCourseDescription'),
         variant: "destructive",
       });
       return;
@@ -42,8 +42,8 @@ export default function Calculator() {
 
     if (goalHours === 0 && goalMinutes === 0 && goalSeconds === 0) {
       toast({
-        title: "목표시간을 입력해주세요",
-        description: "완주하고 싶은 목표시간을 입력해주세요.",
+        title: t('enterGoalTime'),
+        description: t('enterGoalTimeDescription'),
         variant: "destructive",
       });
       return;
@@ -75,18 +75,18 @@ export default function Calculator() {
       }, 100);
     } catch (error) {
       toast({
-        title: "계산 오류",
-        description: "입력값을 확인해주세요.",
+        title: t('calculationError'),
+        description: t('calculationErrorDescription'),
         variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-blue-100">
-      <header className="bg-white shadow-sm border-b border-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-blue-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <header className="bg-white dark:bg-card shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-2 rounded-xl">
                 <Activity className="text-white" size={28} />
@@ -95,8 +95,12 @@ export default function Calculator() {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                   Tri-Pacer
                 </h1>
-                <p className="text-sm text-gray-600">트라이애슬론 페이스 계산기</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{t('appDescription')}</p>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <LanguageToggle />
+              <ThemeToggle />
             </div>
           </div>
         </div>
