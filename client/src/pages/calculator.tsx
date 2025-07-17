@@ -61,7 +61,8 @@ export default function Calculator() {
         swimGoalSeconds ?? 0,
         bikeGoalKmh ?? 0,
         runGoalMinutes ?? 0,
-        runGoalSeconds ?? 0
+        runGoalSeconds ?? 0,
+        t
       );
       
       setResults(calculatedResults);

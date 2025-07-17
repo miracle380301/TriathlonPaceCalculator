@@ -26,6 +26,10 @@
 ✓ world-record-alert.tsx, training-tips.tsx, theme-toggle.tsx, results-display.tsx 한글/영어 번역 적용 완료
 ✓ goal-time-form.tsx에 한글/영어 번역 적용 완료
 ✓ results-display.tsx 다크 모드 스타일 및 완전한 번역 적용 완료
+✓ calculator.ts 유틸리티 함수들에 한글/영어 번역 매개변수 추가 완료
+✓ formatSecondsToMinSec, formatTimeKorean, formatPaceTime, formatTimeDifference 함수 번역 지원
+✓ suggestImprovement 함수 메시지 번역 지원 추가
+✓ calculatePaces 함수에 번역 매개변수 전달 구현 완료
 
 ## 아키텍처
 - **Frontend**: React + TypeScript + Vite

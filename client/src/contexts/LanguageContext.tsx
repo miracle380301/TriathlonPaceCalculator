@@ -117,7 +117,14 @@ const translations = {
     perText: '당',
     improveText: '향상',
     averageText: '평균',
-    shortenText: '단축'
+    shortenText: '단축',
+    // Calculator functions
+    minutesUnit: '분',
+    secondsUnit: '초',
+    hoursUnit: '시간',
+    slower: '느림',
+    faster: '빠름',
+    transitionTimeMessage: '나머지 약 {time}는 전환 시간 등으로 단축 목표로 잡으세요.'
   },
   en: {
     appTitle: 'Triathlon Pace Calculator',
@@ -226,7 +233,14 @@ const translations = {
     perText: 'per',
     improveText: 'improve',
     averageText: 'average',
-    shortenText: 'reduce'
+    shortenText: 'reduce',
+    // Calculator functions
+    minutesUnit: 'min',
+    secondsUnit: 'sec',
+    hoursUnit: 'hrs',
+    slower: 'slower',
+    faster: 'faster',
+    transitionTimeMessage: 'Target the remaining {time} for transition time improvements.'
   }
 };
 

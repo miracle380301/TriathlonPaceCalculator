@@ -104,7 +104,8 @@ interface ImprovementSuggestion {
 
 function suggestImprovement(
   current: CurrentStats,
-  targetReduceSeconds: number
+  targetReduceSeconds: number,
+  t: (key: string) => string
 ): ImprovementSuggestion {
   // 수영 목표 단축: 전체 단축시간의 15% 배정 (현실적 가정)
   const swimTargetReduce = targetReduceSeconds * 0.15;
@@ -140,23 +141,23 @@ function suggestImprovement(
 
   // 메시지 생성
   const messages = [
-    `나머지 약 ${formatSecondsToMinSec(targetReduceSeconds * 0.30)}는 전환 시간 등으로 단축 목표로 잡으세요.`,
+    t('transitionTimeMessage').replace('{time}', formatSecondsToMinSec(targetReduceSeconds * 0.30, t)),
   ];
 
   const totalReduced = swimTargetReduce + bikeTargetReduce + runTargetReduce;
 
   return {
     swim: {
-        reduceSeconds: formatSecondsToMinSec(newSwimPace),
-        newPace: formatSecondsToMinSec(swimTargetReduce),
+        reduceSeconds: formatSecondsToMinSec(newSwimPace, t),
+        newPace: formatSecondsToMinSec(swimTargetReduce, t),
     },
     bike: {
       increaseKmh: newBikeSpeed.toFixed(2),
-      newSpeed: formatSecondsToMinSec(bikeTargetReduce)
+      newSpeed: formatSecondsToMinSec(bikeTargetReduce, t)
     },
     run: {
-      reduceSeconds: formatSecondsToMinSec(newRunPace),
-      newPace: formatSecondsToMinSec(runTargetReduce)
+      reduceSeconds: formatSecondsToMinSec(newRunPace, t),
+      newPace: formatSecondsToMinSec(runTargetReduce, t)
     },
     swimTimeReduceSeconds: swimTargetReduce,
     bikeSpeedIncreaseKmh: newBikeSpeed - current.bikeSpeedKmh,
@@ -167,10 +168,10 @@ function suggestImprovement(
 }
 
 // 보조 함수: 초 -> mm:ss 형식 문자열
-function formatSecondsToMinSec(seconds: number): string {
+function formatSecondsToMinSec(seconds: number, t: (key: string) => string): string {
   const min = Math.floor(seconds / 60);
   const sec = Math.round(seconds % 60);
-  return sec === 0 ? `${min}분` : `${min}분 ${sec}초`;
+  return sec === 0 ? `${min}${t('minutesUnit')}` : `${min}${t('minutesUnit')} ${sec}${t('secondsUnit')}`;
 }
 
 export function formatTime(seconds: number): string {
@@ -187,22 +188,22 @@ export function formatTime(seconds: number): string {
   }
 }
 
-export function formatTimeKorean(seconds: number): string {
+export function formatTimeKorean(seconds: number, t: (key: string) => string): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
   
   if (hours > 0) {
-    return `${hours}시간 ${minutes}분 ${secs}초`;
+    return `${hours}${t('hoursUnit')} ${minutes}${t('minutesUnit')} ${secs}${t('secondsUnit')}`;
   } else if (minutes > 0) {
-    return `${minutes}분 ${secs}초`;
+    return `${minutes}${t('minutesUnit')} ${secs}${t('secondsUnit')}`;
   } else {
-    return `${secs}초`;
+    return `${secs}${t('secondsUnit')}`;
   }
 }
 
-export function formatPaceTime(minutes: number, seconds: number): string {
-  return `${minutes}분 ${seconds.toString().padStart(2, '0')}초`;
+export function formatPaceTime(minutes: number, seconds: number, t: (key: string) => string): string {
+  return `${minutes}${t('minutesUnit')} ${seconds.toString().padStart(2, '0')}${t('secondsUnit')}`;
 }
 
 export function secondsToHMS(totalSeconds: number): { hours: number; minutes: number; seconds: number } {
@@ -225,9 +226,10 @@ interface ImprovementInput {
 /**
  * 초 단위 차이를 "시:분:초 느림/빠름" 형태 문자열로 변환
  * @param {number} diffSeconds - 초 단위 차이 (양수: 느림, 음수: 빠름)
+ * @param {function} t - 번역 함수
  * @returns {string} 변환된 문자열 예: "1:12:30 느림", "0:05:00 빠름"
  */
-function formatTimeDifference(diffSeconds: number) {
+function formatTimeDifference(diffSeconds: number, t: (key: string) => string) {
   const absSeconds = Math.abs(diffSeconds);
 
   const hours = Math.floor(absSeconds / 3600);
@@ -238,7 +240,7 @@ function formatTimeDifference(diffSeconds: number) {
     .toString()
     .padStart(2, '0')}`;
 
-  const status = diffSeconds > 0 ? '느림' : '빠름';
+  const status = diffSeconds > 0 ? t('slower') : t('faster');
 
   return `${timeStr} ${status}`;
 }
@@ -254,7 +256,8 @@ export function calculatePaces(
   currentSwimSeconds: number,
   currentBikeKmh: number,
   currentRunMinutes: number,
-  currentRunSeconds: number
+  currentRunSeconds: number,
+  t: (key: string) => string
 ): PaceResult {
   const totalGoalSeconds = goalHours * 3600 + goalMinutes * 60 + goalSeconds; // 목표 경기시간
   const transitionSeconds = (t1Minutes + t2Minutes) * 60;
@@ -283,9 +286,9 @@ export function calculatePaces(
   const totalPredictSeconds = swimTime + bikeTime + runTime;   // 예상 총 경기시간(바꿈터 포함)
   const totalPredictRaceTimeSeconds = totalPredictSeconds - transitionSeconds; // 예상 경기시간
 
-  const totalRaceDiffernce = totalPredictRaceTimeSeconds > totalGoalRaceTimeSeconds ? formatTimeDifference(totalPredictRaceTimeSeconds - totalGoalRaceTimeSeconds) : formatTimeDifference(totalPredictRaceTimeSeconds - totalGoalRaceTimeSeconds);
+  const totalRaceDiffernce = totalPredictRaceTimeSeconds > totalGoalRaceTimeSeconds ? formatTimeDifference(totalPredictRaceTimeSeconds - totalGoalRaceTimeSeconds, t) : formatTimeDifference(totalPredictRaceTimeSeconds - totalGoalRaceTimeSeconds, t);
   const totalRaceDiffernceStatus = totalPredictRaceTimeSeconds > totalGoalRaceTimeSeconds ? 'slower' : 'faster';
-  const totalDiffernce =  totalPredictSeconds > totalGoalSeconds ? formatTimeDifference(totalPredictSeconds - totalGoalSeconds) : formatTimeDifference(totalPredictSeconds - totalGoalSeconds);
+  const totalDiffernce =  totalPredictSeconds > totalGoalSeconds ? formatTimeDifference(totalPredictSeconds - totalGoalSeconds, t) : formatTimeDifference(totalPredictSeconds - totalGoalSeconds, t);
   const totalDiffernceStatus =  totalPredictSeconds > totalGoalSeconds ? 'slower' : 'faster';
 
   const timeRaceDifference = totalPredictRaceTimeSeconds - totalGoalRaceTimeSeconds;
@@ -314,7 +317,7 @@ export function calculatePaces(
     const currentTotalSeconds = currentSwimTimeSeconds + currentBikeTimeSeconds + currentRunTimeSeconds + (t1Minutes + t2Minutes) * 60;
 
     const targetReduceSeconds = timeRaceDifference;
-    const suggestion = suggestImprovement(currentStats, targetReduceSeconds);
+    const suggestion = suggestImprovement(currentStats, targetReduceSeconds, t);
 
     comparison = {
       totalTimeDifference: timeDifference,

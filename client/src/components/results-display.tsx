@@ -13,8 +13,8 @@ interface ResultsDisplayProps {
   totalRaceTimeSeconds?: number;
 }
 
-function formatSecondsToKoreanTime(totalSeconds: number): string {
-  return formatTimeKorean(totalSeconds);
+function formatSecondsToKoreanTime(totalSeconds: number, t: (key: string) => string): string {
+  return formatTimeKorean(totalSeconds, t);
 }
 
 function handleDownload({results,
@@ -85,7 +85,7 @@ export default function ResultsDisplay({
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-1">
-              {formatPaceTime(results.swimPace.minutes, results.swimPace.seconds)}
+              {formatPaceTime(results.swimPace.minutes, results.swimPace.seconds, t)}
             </div>
             <div className="text-blue-700 dark:text-blue-300 text-sm">{t('per100m')}</div>
             <div className="text-blue-600 dark:text-blue-400 text-xs mt-2">
@@ -121,7 +121,7 @@ export default function ResultsDisplay({
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-900 dark:text-orange-100 mb-1">
-              {formatPaceTime(results.runPace.minutes, results.runPace.seconds)}
+              {formatPaceTime(results.runPace.minutes, results.runPace.seconds, t)}
             </div>
             <div className="text-orange-700 dark:text-orange-300 text-sm">{t('perKm')}</div>
             <div className="text-orange-600 dark:text-orange-400 text-xs mt-2">
@@ -280,11 +280,11 @@ export default function ResultsDisplay({
             <div className="text-lg font-bold">
               {results.comparison.totalTimeDifference > 0 ? (
                 <span className="text-red-600">
-                  {t('slowerThanGoal')} {formatSecondsToKoreanTime(Math.abs(results.comparison.totalTimeDifference))} {t('slowText')}
+                  {t('slowerThanGoal')} {formatSecondsToKoreanTime(Math.abs(results.comparison.totalTimeDifference), t)} {t('slowText')}
                 </span>
               ) : results.comparison.totalTimeDifference < 0 ? (
                 <span className="text-green-600">
-                  {t('fasterThanGoal')} {formatSecondsToKoreanTime(Math.abs(results.comparison.totalTimeDifference))} {t('fastText')}
+                  {t('fasterThanGoal')} {formatSecondsToKoreanTime(Math.abs(results.comparison.totalTimeDifference), t)} {t('fastText')}
                 </span>
               ) : (
                 <span className="text-gray-600 dark:text-gray-400">{t('sameAsGoalTime')}</span>
