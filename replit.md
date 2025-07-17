@@ -17,12 +17,13 @@
 ✓ 목표 vs 현재 페이스 비교 분석 구현
 ✓ 전체 시간 차이 계산 및 표시
 ✓ 종목별 개선 제안 (단축 시간, 속도 향상) 추가
-✓ Vite 개발 서버 설정 완료 (localhost:5000)
+✓ Vite 개발 서버 설정 완료 (localhost:5173)
 ✓ 완전한 프론트엔드 전용 계산기 구현
 ✓ 비용 없는 완전한 클라이언트 사이드 솔루션
 ✓ 서버 디렉토리 및 shared 디렉토리 제거 완료
-✓ 다크/라이트 모드 토글 기능 추가 진행 중
-✓ 한국어/영어 언어 전환 기능 추가 진행 중
+✓ 다크/라이트 모드 토글 기능 추가 완료
+✓ 한국어/영어 언어 전환 기능 추가 완료
+✓ world-record-alert.tsx, training-tips.tsx, theme-toggle.tsx, results-display.tsx 한글/영어 번역 적용 완료
 
 ## 아키텍처
 - **Frontend**: React + TypeScript + Vite

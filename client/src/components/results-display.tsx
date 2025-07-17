@@ -3,6 +3,7 @@ import { Target, Waves, Bike, Footprints, Trophy, Clock, TrendingUp } from "luci
 import { PaceResult, formatTime, formatPaceTime, formatTimeKorean } from "@/lib/calculator";
 import { Button } from "@/components/ui/button";
 import { createTCX } from '../lib/createTcx';
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ResultsDisplayProps {
   results: PaceResult | null;
@@ -50,6 +51,8 @@ export default function ResultsDisplay({
   t1Minutes,
   t2Minutes,
 }: ResultsDisplayProps) {
+  const { t } = useLanguage();
+  
   if (!results) {
     return null;
   }
@@ -59,7 +62,7 @@ export default function ResultsDisplay({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2 mb-6">
           <TrendingUp className="text-sports-blue" size={20} />
-          <h2 className="text-xl font-semibold text-neutral-dark">예상 페이스 및 시간</h2>
+          <h2 className="text-xl font-semibold text-neutral-dark dark:text-white">{t('expectedPaceTime')}</h2>
         </div>
 
         <Button
@@ -67,7 +70,7 @@ export default function ResultsDisplay({
           className="bg-neutral-400 text-white py-2 px-4 rounded-lg font-semibold hover:bg-neutral-500 transition-colors duration-200 flex items-center gap-1 h-auto"
         >
           <Clock className="text-white" size={16} />
-            TCX 파일 다운로드
+            {t('tcxDownload')}
         </Button>
       </div>
       
@@ -78,15 +81,15 @@ export default function ResultsDisplay({
             <div className="bg-blue-500 p-2 rounded-lg">
               <Waves className="text-white" size={20} />
             </div>
-            <span className="font-semibold text-blue-800">🏊 수영</span>
+            <span className="font-semibold text-blue-800">🏊 {t('swimming')}</span>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-900 mb-1">
               {formatPaceTime(results.swimPace.minutes, results.swimPace.seconds)}
             </div>
-            <div className="text-blue-700 text-sm">100m당</div>
+            <div className="text-blue-700 text-sm">{t('per100m')}</div>
             <div className="text-blue-600 text-xs mt-2">
-              총 {formatTime(results.swimTime)}
+              {t('totalTime')} {formatTime(results.swimTime)}
             </div>
           </div>
         </div>
@@ -96,15 +99,15 @@ export default function ResultsDisplay({
             <div className="bg-green-500 p-2 rounded-lg">
               <Bike className="text-white" size={20} />
             </div>
-            <span className="font-semibold text-green-800">🚴 자전거</span>
+            <span className="font-semibold text-green-800">🚴 {t('cycling')}</span>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-900 mb-1">
               {results.bikePace.bikeSpeed}km/h
             </div>
-            <div className="text-green-700 text-sm">평균 속도</div>
+            <div className="text-green-700 text-sm">{t('averageSpeed')}</div>
             <div className="text-green-600 text-xs mt-2">
-              총 {formatTime(results.bikeTime)}
+              {t('totalTime')} {formatTime(results.bikeTime)}
             </div>
           </div>
         </div>
@@ -114,15 +117,15 @@ export default function ResultsDisplay({
             <div className="bg-orange-500 p-2 rounded-lg">
               <Footprints className="text-white" size={20} />
             </div>
-            <span className="font-semibold text-orange-800">🏃 달리기</span>
+            <span className="font-semibold text-orange-800">🏃 {t('running')}</span>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-900 mb-1">
               {formatPaceTime(results.runPace.minutes, results.runPace.seconds)}
             </div>
-            <div className="text-orange-700 text-sm">km당</div>
+            <div className="text-orange-700 text-sm">{t('perKm')}</div>
             <div className="text-orange-600 text-xs mt-2">
-              총 {formatTime(results.runTime)}
+              {t('totalTime')} {formatTime(results.runTime)}
             </div>
           </div>
         </div>
@@ -135,21 +138,21 @@ export default function ResultsDisplay({
             <div className="text-lg font-semibold text-gray-800">
               {t1Minutes}분
             </div>
-            <div className="text-gray-500">T1 (수영→자전거)</div>
+            <div className="text-gray-500 dark:text-gray-400">{t('t1Transition')}</div>
           </div>
           <div>
-            <div className="text-lg font-semibold text-gray-800">
+            <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
               {t2Minutes}분
             </div>
-            <div className="text-gray-500">T2 (자전거→달리기)</div>
+            <div className="text-gray-500 dark:text-gray-400">{t('t2Transition')}</div>
           </div>
           <div>
               <div className="text-lg font-semibold 'text-sports-blue">
                 {formatTime(results.totalPredictRaceTimeSeconds)}
               </div>
 
-            <div className="text-gray-500">
-              경기시간
+            <div className="text-gray-500 dark:text-gray-400">
+              {t('raceTime')}
               <div className="text-xs text-gray-400 p-2">
                 <div
                   className={`text-xs p-2 flex flex-col items-center gap-1 text-center ${
