@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calculator, Play } from "lucide-react";
 import { Waves, Bike, Footprints } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface GoalTimeFormProps {
   goalHours: number | null;
@@ -32,11 +33,7 @@ interface GoalTimeFormProps {
   selectedCourse: string | null;
 }
 
-const disciplines = [
-  { label: "수영", key: "swim" },
-  { label: "자전거", key: "bike" },
-  { label: "달리기", key: "run" },
-];
+// disciplines will be created inside the component to use translations
 
 const disciplineIcons: Record<"swim" | "bike" | "run", JSX.Element> = {
   swim: <Waves size={16} className="text-blue-500" />,
@@ -71,24 +68,26 @@ export default function GoalTimeForm({
   onCalculate,
   selectedCourse,
 }: GoalTimeFormProps) {
+  const { t } = useLanguage();
+  
   return (
-    <Card className="p-6 mb-6">
-      <h2 className="text-xl font-semibold text-neutral-dark mb-4 flex items-center gap-2">
+    <Card className="p-6 mb-6 bg-white dark:bg-gray-800">
+      <h2 className="text-xl font-semibold text-neutral-dark dark:text-white mb-4 flex items-center gap-2">
         <Calculator className="text-sports-blue" size={20} />
-        목표시간 입력
+        {t('goalTimeInputTitle')}
       </h2>
 
       {/* 목표 완주시간 & 바꿈터 시간 */}
       <div className="grid md:grid-cols-2 gap-6">
         <div>
-          <Label className="block text-sm font-medium text-gray-700 mb-2">
-            목표 완주시간
+          <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            {t('goalFinishTime')}
           </Label>
           <div className="flex gap-2">
             <div className="flex-1">
               <Input
                 type="number"
-                placeholder="시간"
+                placeholder={t('hours')}
                 min="0"
                 max="23"
                 value={goalHours === null || goalHours === undefined ? "" : goalHours}
@@ -98,12 +97,12 @@ export default function GoalTimeForm({
                 }}
                 className="font-inter"
               />
-              <div className="text-xs text-gray-500 mt-1">시간</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('hours')}</div>
             </div>
             <div className="flex-1">
               <Input
                 type="number"
-                placeholder="분"
+                placeholder={t('minutes')}
                 min="0"
                 max="59"
                 value={goalMinutes === null || goalMinutes === undefined ? "" : goalMinutes}
@@ -113,12 +112,12 @@ export default function GoalTimeForm({
                 }}
                 className="font-inter"
               />
-              <div className="text-xs text-gray-500 mt-1">분</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('minutes')}</div>
             </div>
             <div className="flex-1">
               <Input
                 type="number"
-                placeholder="초"
+                placeholder={t('seconds')}
                 min="0"
                 max="59"
                 value={goalSeconds === null || goalSeconds === undefined ? "" : goalSeconds}
@@ -128,20 +127,20 @@ export default function GoalTimeForm({
                 }}
                 className="font-inter"
               />
-              <div className="text-xs text-gray-500 mt-1">초</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('seconds')}</div>
             </div>
           </div>
         </div>
 
         <div>
-          <Label className="block text-sm font-medium text-gray-700 mb-2">
-            바꿈터 시간 (선택)
+          <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            {t('transitionTime')}
           </Label>
           <div className="flex gap-2">
             <div className="flex-1">
               <Input
                 type="number"
-                placeholder="T1 분"
+                placeholder={`T1 ${t('minutes')}`}
                 min="0"
                 max="30"
                 value={t1Minutes === null || t1Minutes === undefined ? "" : t1Minutes}                
@@ -151,12 +150,12 @@ export default function GoalTimeForm({
                 }}
                 className="font-inter"
               />
-              <div className="text-xs text-gray-500 mt-1">수영→사이클</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('swimToCycle')}</div>
             </div>
             <div className="flex-1">
               <Input
                 type="number"
-                placeholder="T2 분"
+                placeholder={`T2 ${t('minutes')}`}
                 min="0"
                 max="30"
                 value={t2Minutes === null || t2Minutes === undefined ? "" : t2Minutes}
@@ -166,7 +165,7 @@ export default function GoalTimeForm({
                 }}
                 className="font-inter"
               />
-              <div className="text-xs text-gray-500 mt-1">사이클→달리기</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('cycleToRun')}</div>
             </div>
           </div>
         </div>
@@ -174,21 +173,21 @@ export default function GoalTimeForm({
 
       {/* 종목별 페이스 입력 */}
       <div className="mt-4">
-        <h2 className="text-xl font-semibold text-neutral-dark mb-4 flex items-center gap-2">
+        <h2 className="text-xl font-semibold text-neutral-dark dark:text-white mb-4 flex items-center gap-2">
           <Calculator className="text-sports-blue" size={20} />
-          예상종목별 페이스 입력
+          {t('expectedPaceInput')}
         </h2>
         <div className="flex flex-col gap-4 w-full max-w-md mx-auto">
           {/* 수영 */}
           <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3">
-            <Label className="flex items-center text-sm font-medium text-gray-700 gap-1 w-24 sm:w-28 flex-shrink-0">
+            <Label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 gap-1 w-24 sm:w-28 flex-shrink-0">
               {disciplineIcons["swim"]}
-              수영
+              {t('swimming')}
             </Label>
             <div className="flex flex-1 gap-3">
               <Input
                 type="number"
-                placeholder="분"
+                placeholder={t('minutes')}
                 min="0"
                 max="59"
                 className="font-inter w-full min-w-[60px]"
@@ -200,7 +199,7 @@ export default function GoalTimeForm({
               />
               <Input
                 type="number"
-                placeholder="초"
+                placeholder={t('seconds')}
                 min="0"
                 max="59"
                 className="font-inter w-full min-w-[60px]"
@@ -210,17 +209,17 @@ export default function GoalTimeForm({
                   onSwimGoalSecondsChange(val === "" ? 0 : parseInt(val));
                 }}
               />
-              <span className="text-xs text-gray-500 font-bold whitespace-nowrap flex items-center">
-                분 /100m
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-bold whitespace-nowrap flex items-center">
+                {t('minPer100m')}
               </span>
             </div>
           </div>
 
           {/* 자전거 */}
           <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3">
-            <Label className="flex items-center text-sm font-medium text-gray-700 gap-1 w-24 sm:w-28 flex-shrink-0">
+            <Label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 gap-1 w-24 sm:w-28 flex-shrink-0">
               {disciplineIcons["bike"]}
-              자전거
+              {t('cycling')}
             </Label>
             <div className="flex flex-1 gap-3 items-center">
               <Input
@@ -234,7 +233,7 @@ export default function GoalTimeForm({
                   onBikeGoalKmhChange(val === "" ? 0 : parseInt(val));
                 }}                
               />
-              <span className="text-xs text-gray-500 font-bold whitespace-nowrap">
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-bold whitespace-nowrap">
                 km/h
               </span>
             </div>
@@ -242,14 +241,14 @@ export default function GoalTimeForm({
 
           {/* 달리기 */}
           <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3">
-            <Label className="flex items-center text-sm font-medium text-gray-700 gap-1 w-24 sm:w-28 flex-shrink-0">
+            <Label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 gap-1 w-24 sm:w-28 flex-shrink-0">
               {disciplineIcons["run"]}
-              달리기
+              {t('running')}
             </Label>
             <div className="flex flex-1 gap-3">
               <Input
                 type="number"
-                placeholder="분"
+                placeholder={t('minutes')}
                 min="0"
                 max="59"
                 className="font-inter w-full min-w-[60px]"
@@ -260,7 +259,7 @@ export default function GoalTimeForm({
               />
               <Input
                 type="number"
-                placeholder="초"
+                placeholder={t('seconds')}
                 min="0"
                 max="59"
                 className="font-inter w-full min-w-[60px]"
@@ -269,8 +268,8 @@ export default function GoalTimeForm({
                   onRunGoalSecondsChange(parseInt(e.target.value) || 0)
                 }
               />
-              <span className="text-xs text-gray-500 font-bold whitespace-nowrap flex items-center">
-                분 /km
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-bold whitespace-nowrap flex items-center">
+                {t('minPerKm')}
               </span>
             </div>
           </div>
@@ -283,7 +282,7 @@ export default function GoalTimeForm({
         disabled={!selectedCourse}
       >
         <Play size={16} />
-        페이스 계산하기
+        {t('calculatePace')}
       </Button>
     </Card>
   );

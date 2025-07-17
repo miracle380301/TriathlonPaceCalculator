@@ -89,7 +89,17 @@ const translations = {
     improvementSuggestions: '개선 제안',
     improvementDesc: '목표 시간에 가까워지려면 각 종목에서 이렇게 시도해보세요',
     reduce: '단축',
-    increase: '향상'
+    increase: '향상',
+    // Goal Time Form
+    goalTimeInputTitle: '목표시간 입력',
+    goalFinishTime: '목표 완주시간',
+    transitionTime: '바꿈터 시간 (선택)',
+    swimToCycle: '수영→사이클',
+    cycleToRun: '사이클→달리기',
+    expectedPaceInput: '예상종목별 페이스 입력',
+    minPer100m: '분 /100m',
+    minPerKm: '분 /km',
+    calculatePace: '페이스 계산하기'
   },
   en: {
     appTitle: 'Triathlon Pace Calculator',
@@ -170,7 +180,17 @@ const translations = {
     improvementSuggestions: 'Improvement Suggestions',
     improvementDesc: 'To get closer to your goal time, try these improvements in each discipline',
     reduce: 'reduce',
-    increase: 'increase'
+    increase: 'increase',
+    // Goal Time Form
+    goalTimeInputTitle: 'Goal Time Input',
+    goalFinishTime: 'Goal Finish Time',
+    transitionTime: 'Transition Time (Optional)',
+    swimToCycle: 'Swim→Cycle',
+    cycleToRun: 'Cycle→Run',
+    expectedPaceInput: 'Expected Pace Input by Sport',
+    minPer100m: 'min /100m',
+    minPerKm: 'min /km',
+    calculatePace: 'Calculate Pace'
   }
 };
 
