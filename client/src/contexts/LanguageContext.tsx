@@ -108,7 +108,6 @@ const translations = {
     t2TransitionText: 'T2 (자전거→달리기)',
     overallTimeDiff: '전체 시간 차이',
     slowerThanGoal: '목표보다',
-    fasterThanGoal: '목표보다',
     slowText: '느림',
     fastText: '빠름',
     sameAsGoalTime: '목표 시간과 동일',
@@ -122,8 +121,6 @@ const translations = {
     minutesUnit: '분',
     secondsUnit: '초',
     hoursUnit: '시간',
-    slower: '느림',
-    faster: '빠름',
     transitionTimeMessage: '나머지 약 {time}는 전환 시간 등으로 단축 목표로 잡으세요.'
   },
   en: {
@@ -224,7 +221,6 @@ const translations = {
     t2TransitionText: 'T2 (Bike→Run)',
     overallTimeDiff: 'Overall Time Difference',
     slowerThanGoal: 'Slower than goal by',
-    fasterThanGoal: 'Faster than goal by',
     slowText: 'slower',
     fastText: 'faster',
     sameAsGoalTime: 'Same as goal time',
@@ -238,8 +234,6 @@ const translations = {
     minutesUnit: 'min',
     secondsUnit: 'sec',
     hoursUnit: 'hrs',
-    slower: 'slower',
-    faster: 'faster',
     transitionTimeMessage: 'Target the remaining {time} for transition time improvements.'
   }
 };
