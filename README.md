@@ -2,6 +2,8 @@
 
 철인 3종 경기의 목표 시간을 달성하기 위한 페이스를 계산하는 웹 애플리케이션입니다.
 
+🌐 **Live Demo**: [https://triathlonpacecalculator.pages.dev](https://triathlonpacecalculator.pages.dev)
+
 ## 📱 주요 기능
 
 - **다양한 코스 지원**: 스프린트, 올림픽, 하프 아이언맨, 아이언맨 코스
@@ -23,7 +25,7 @@
 
 ```bash
 # 저장소 클론
-git clone https://github.com/yourusername/TriathlonPaceCalculator.git
+git clone https://github.com/miracle380301/TriathlonPaceCalculator.git
 cd TriathlonPaceCalculator
 
 # 의존성 설치
@@ -58,6 +60,9 @@ npm run start
 - **백엔드**
   - Hono (웹 프레임워크)
   - Express (서버)
+
+- **배포**
+  - Cloudflare Pages
 
 ## 📁 프로젝트 구조
 
